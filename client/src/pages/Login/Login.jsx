@@ -1,9 +1,9 @@
 // src/components/Login/Auth.jsx
 
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "../../Api/axios";
 import "./Login.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AppState } from "../../App"; // Assuming you have a context for auth state
 import { toast } from "react-toastify"; // Import toast
 
@@ -19,8 +19,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+
+
   const navigate = useNavigate();
-  const { setUser } = useContext(AppState); // Access setUser if needed
+  const navStateData =useLocation()
+  console.log(navStateData)
+  // const { setUser } = useContext(AppState); // Access setUser if needed
+  const { setUser, user } = useContext(AppState); // Access user context
 
   // RegEx Patterns
 
@@ -92,7 +97,17 @@ const Login = () => {
           localStorage.setItem("username", response.data.username);
           localStorage.setItem("userid", response.data.userid);
           setUser(response.data); // Update user context if necessary
-          navigate("/"); // Redirect to home after a short delay to allow toast to show
+
+          // const redirectTo = navStateData.state?.redirect || "/";
+          // navigate(redirectTo, { replace: true }); // Redirect to 
+
+          // setTimeout(() => {
+          //   navigate("/"); // Redirect after successful login
+          // }, 0);
+          // console.log(navStateData?.state?.redirect)
+          // navigate(navStateData?.state?.redirect || "/",{replace:true})
+
+          //navigate("/"); // Redirect to home after a short delay to allow toast to show
         }
       } else {
         // Signup Logic
@@ -131,6 +146,13 @@ const Login = () => {
       setLoading(false);
     }
   };
+  //Use this effect to navigate once the user state is set
+  useEffect(() => {
+    if (user) {
+      console.log("User is set, navigating...");
+      navigate(navStateData.state?.redirect || "/", { replace: true });
+    }
+  }, [user, navigate, navStateData.state?.redirect]);  // Trigger navigation when user changes
 
   // Toggle between Login and Signup forms
   const toggleForm = () => {
